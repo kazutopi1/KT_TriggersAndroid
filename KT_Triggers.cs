@@ -19,14 +19,11 @@ namespace KT_Triggers
         {
             TriggerActionManager.RegisterTrigger("KT_ButtonAPressed");
             TriggerActionManager.RegisterTrigger("KT_ButtonBPressed");
-            TriggerActionManager.RegisterTrigger("KT_UpdateTicked");
             TriggerActionManager.RegisterTrigger("KT_DoSwing");
             TriggerActionManager.RegisterTrigger("KT_On3rdSwing");
             TriggerActionManager.RegisterTrigger("KT_UseTool");
 
             var harmony = new Harmony(this.ModManifest.UniqueID);
-
-            helper.Events.GameLoop.UpdateTicked += KT_UpdateTicked;
 
             harmony.Patch(
                 original: AccessTools.PropertyGetter(typeof(VirtualJoypad), nameof(VirtualJoypad.ButtonAPressed)),
@@ -64,16 +61,6 @@ namespace KT_Triggers
                 TriggerActionManager.Raise("KT_ButtonBPressed");
             }
             wasBTapped = __result;
-        }
-        private void KT_UpdateTicked(object sender, UpdateTickedEventArgs e)
-        {
-            if (!Context.IsWorldReady)
-                return;
-
-            if (Context.IsPlayerFree || Context.CanPlayerMove)
-            {
-                TriggerActionManager.Raise("KT_UpdateTicked");
-            }
         }
         private static void DoSwipe()
         {
