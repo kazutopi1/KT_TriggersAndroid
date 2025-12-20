@@ -1,5 +1,4 @@
 using StardewValley;
-using StardewValley.Tools;
 using StardewValley.Mobile;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
@@ -12,17 +11,14 @@ namespace KT_Triggers
     {
         private static bool wasATapped = false;
         private static bool wasBTapped = false;
-        private static int swingCount = 0;
-        private const int swingThreshold = 3;
 
         public override void Entry(IModHelper helper)
         {
+            if (Constants.TargetPlatform != GamePlatform.Android)
+                return;
+
             TriggerActionManager.RegisterTrigger("KT_ButtonAPressed");
             TriggerActionManager.RegisterTrigger("KT_ButtonBPressed");
-            TriggerActionManager.RegisterTrigger("KT_DoSwing");
-            TriggerActionManager.RegisterTrigger("KT_On3rdSwing");
-            TriggerActionManager.RegisterTrigger("KT_UseTool");
-
             var harmony = new Harmony(this.ModManifest.UniqueID);
 
             harmony.Patch(
@@ -33,22 +29,22 @@ namespace KT_Triggers
                 original: AccessTools.PropertyGetter(typeof(VirtualJoypad), nameof(VirtualJoypad.ButtonBPressed)),
                 postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.ButtonB))
             );
-            harmony.Patch(
-                original: AccessTools.Method(typeof(MeleeWeapon), nameof(MeleeWeapon.doSwipe)),
-                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.DoSwipe))
-            );
-            harmony.Patch(
-                original: AccessTools.Method(typeof(MeleeWeapon), nameof(MeleeWeapon.doSwipe)),
-                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.On3rdSwing))
-            );
-            harmony.Patch(
-                original: AccessTools.Method(typeof(Farmer), nameof(Farmer.useTool)),
-                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.UseTool))
-            );
+            helper.Events.GameLoop.ReturnedToTitle += Reset1;
+            helper.Events.GameLoop.SaveLoaded += Reset2;
+        }
+        private void Reset1(object sender, ReturnedToTitleEventArgs e)
+        {
+            wasATapped = false;
+            wasBTapped = false;
+        }
+        private void Reset2(object sender, SaveLoadedEventArgs e)
+        {
+            wasATapped = false;
+            wasBTapped = false;
         }
         private static void ButtonA(ref bool __result)
         {
-            if (__result && !wasATapped)
+            if (__result && !wasATapped && Context.IsWorldReady && Context.IsPlayerFree)
             {
                 TriggerActionManager.Raise("KT_ButtonAPressed");
             }
@@ -56,28 +52,11 @@ namespace KT_Triggers
         }
         private static void ButtonB(ref bool __result)
         {
-            if (__result && !wasBTapped)
+            if (__result && !wasBTapped && Context.IsWorldReady && Context.IsPlayerFree)
             {
                 TriggerActionManager.Raise("KT_ButtonBPressed");
             }
             wasBTapped = __result;
-        }
-        private static void DoSwipe()
-        {
-            TriggerActionManager.Raise("KT_DoSwing");
-        }
-        private static void On3rdSwing()
-        {
-            swingCount += 1;
-            if (swingCount >= swingThreshold)
-            {
-                TriggerActionManager.Raise("KT_On3rdSwing");
-                swingCount = 0;
-            }
-        }
-        private static void UseTool(Farmer who)
-        {
-            TriggerActionManager.Raise("KT_UseTool");
         }
     }
 }
