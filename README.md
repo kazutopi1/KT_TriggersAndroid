@@ -1,6 +1,6 @@
 # KT Triggers (Android)
 
-Add 3 new custom Triggers for Data/TriggerActions for Android users to utilize.
+Adds 3 new custom Triggers for Data/TriggerActions for Android users to utilize.
 
 `kazutopi1.KT_ButtonAPressed`:
 Raised when player is currently holding an item and virtual button A(Left) is pressed/tapped.
