@@ -9,4 +9,4 @@ Raised when player is currently holding an item and virtual button A(Left) is pr
 Raised when player is currently holding an item and virtual button B(Right) is pressed/tapped.
 
 `kazutopi1.KT_OnTap`:
-Raised when the current movement control is `Tap-to-move & Auto-Attack` and the tile the player standing in is pressed/tapped while holding an item.
+Raised when the current movement control is `Tap-to-move & Auto-Attack` and the tile the player standing in is pressed/tapped while currently holding an item.
