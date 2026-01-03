@@ -7,4 +7,4 @@ Raised when virtual button A(Left) is pressed/tapped.
 Raised when virtual button B(Right) is pressed/tapped.
 
 `kazutopi1.KT_OnTap`:
-Raised when the current movement control is `Tap-to-move & Attack Joystick` and the tile the player standing in is pressed/tapped.
+Raised when the current movement control is `Tap-to-move & Auto-Attack` and the tile the player standing in is pressed/tapped.
