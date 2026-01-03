@@ -66,7 +66,10 @@ namespace KT_Triggers
             {
                 if (__result && !wasATapped && Context.IsWorldReady && Context.IsPlayerFree)
                 {
-                    TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed");
+                    if (Game1.player.CurrentItem != null || Game1.player.CurrentTool != null)
+                    {
+                        TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed");
+                    }
                 }
                 wasATapped = __result;
             }
@@ -85,7 +88,10 @@ namespace KT_Triggers
             {
                 if (__result && !wasBTapped && Context.IsWorldReady && Context.IsPlayerFree)
                 {
-                    TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed");
+                    if (Game1.player.CurrentItem != null || Game1.player.CurrentTool != null)
+                    {
+                        TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed");
+                    }
                 }
                 wasBTapped = __result;
             }
@@ -112,7 +118,10 @@ namespace KT_Triggers
                 {
                     if (Game1.options.weaponControl is 0 or 1)
                     {
-                        TriggerActionManager.Raise("kazutopi1.KT_OnTap");
+                        if (Game1.player.CurrentItem != null || Game1.player.CurrentTool != null)
+                        {
+                            TriggerActionManager.Raise("kazutopi1.KT_OnTap");
+                        }
                     }
                 }
             }
