@@ -37,7 +37,7 @@ This snippet will give the player 1 gold every time virtual button B is pressed 
 }
 ```
 
-This snippet will add a critical chance buff each time you press virtual button A while holding the item (W)0, making each swing have a guaranteed crit.
+This snippet will add a critical chance buff each time you press virtual button A while holding the item `(W)0`, making each swing have a guaranteed crit.
 ```
 {
   "Format": "2.8.0",
