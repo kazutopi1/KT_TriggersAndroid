@@ -10,12 +10,7 @@ namespace KT_Triggers
 {
     internal sealed class Tiger : Mod
     {
-        private static bool wasATapped = false;
-        private static bool wasBTapped = false;
         private static IMonitor M;
-        private static bool alreadyLoggedA = false;
-        private static bool alreadyLoggedB = false;
-        private static bool alreadyLoggedTap = false;
 
         public override void Entry(IModHelper helper)
         {
@@ -35,79 +30,58 @@ namespace KT_Triggers
             var harmony = new Harmony(this.ModManifest.UniqueID);
 
             harmony.Patch(
-                original: AccessTools.PropertyGetter(typeof(VirtualJoypad), nameof(VirtualJoypad.ButtonAPressed)),
-                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.ButtonA))
-            );
-            harmony.Patch(
-                original: AccessTools.PropertyGetter(typeof(VirtualJoypad), nameof(VirtualJoypad.ButtonBPressed)),
-                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.ButtonB))
+                original: AccessTools.Method(typeof(VirtualJoypad), nameof(VirtualJoypad.CheckForTapJoystickAndButtons)),
+                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.ButtonAOrButtonB))
             );
             harmony.Patch(
                 original: AccessTools.Method(typeof(TapToMove), nameof(TapToMove.OnTap)),
                 postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.OnTap))
             );
+        }
+        public static void ButtonAOrButtonB(VirtualJoypad __instance)
+        {
+            try
+            {
+                if (__instance.ButtonAPressed)
+                {
+                    if (Game1.currentLocation.tapToMove.mobileKeyStates.useToolButtonPressed)
+                    {
+                        if (Game1.player.CurrentItem != null)
+                        {
+                            TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed", targetItem: Game1.player.CurrentItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                M.LogOnce($"Failed to raise trigger. {ex.ToString()}", LogLevel.Error);
+            }
 
-            helper.Events.GameLoop.ReturnedToTitle += Reset1;
-            helper.Events.GameLoop.SaveLoaded += Reset2;
-        }
-        private void Reset1(object sender, ReturnedToTitleEventArgs e)
-        {
-            wasATapped = false;
-            wasBTapped = false;
-        }
-        private void Reset2(object sender, SaveLoadedEventArgs e)
-        {
-            wasATapped = false;
-            wasBTapped = false;
-        }
-        private static void ButtonA(ref bool __result)
-        {
             try
             {
-                if (__result && !wasATapped && Context.IsWorldReady && Context.IsPlayerFree)
+                if (__instance.ButtonBPressed)
                 {
-                    if (Game1.player.CurrentItem != null)
+                    if (Game1.currentLocation.tapToMove.mobileKeyStates.actionButtonPressed)
                     {
-                        TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed", targetItem: Game1.player.CurrentItem);
+                        if (Game1.player.CurrentItem != null)
+                        {
+                            TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed", targetItem: Game1.player.CurrentItem);
+                        }
                     }
                 }
-                wasATapped = __result;
             }
             catch (Exception ex)
             {
-                if (!alreadyLoggedA)
-                {
-                    M.Log($"Failed to raise trigger. {ex.ToString()}", LogLevel.Error);
-                    alreadyLoggedA = true;
-                }
-            }
-        }
-        private static void ButtonB(ref bool __result)
-        {
-            try
-            {
-                if (__result && !wasBTapped && Context.IsWorldReady && Context.IsPlayerFree)
-                {
-                    if (Game1.player.CurrentItem != null)
-                    {
-                        TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed", targetItem: Game1.player.CurrentItem);
-                    }
-                }
-                wasBTapped = __result;
-            }
-            catch (Exception ex)
-            {
-                if (!alreadyLoggedB)
-                {
-                    M.Log($"Failed to raise trigger. {ex.ToString()}", LogLevel.Error);
-                    alreadyLoggedB = true;
-                }
+                M.LogOnce($"Failed to raise trigger. {ex.ToString()}", LogLevel.Error);
             }
         }
         public static void OnTap(int mouseX, int mouseY, int viewportX, int viewportY)
         {
             try
             {
+                if (!Context.IsWorldReady || !Context.IsPlayerFree) { return; }
+
                 int tappedTileX = (mouseX + viewportX) / Game1.tileSize;
                 int tappedTileY = (mouseY + viewportY) / Game1.tileSize;
 
@@ -127,11 +101,7 @@ namespace KT_Triggers
             }
             catch (Exception ex)
             {
-                if (!alreadyLoggedTap)
-                {
-                    M.Log($"Failed to raise trigger: {ex.ToString()}", LogLevel.Error);
-                    alreadyLoggedTap = true;
-                }
+                M.LogOnce($"Failed to raise trigger: {ex.ToString()}", LogLevel.Error);
             }
         }
     }
