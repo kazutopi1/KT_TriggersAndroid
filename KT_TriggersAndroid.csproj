@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
-    <AssemblyName>ShopAnywhereAndroid</AssemblyName>
+    <AssemblyName>KT_TriggersAndroid</AssemblyName>
     <EnableHarmony>true</EnableHarmony>
 
     <NoWarn>$(NoWarn);CA1416;CS8618;CS8622;CS8625;CS8600;CS8604;MSB3277</NoWarn>
