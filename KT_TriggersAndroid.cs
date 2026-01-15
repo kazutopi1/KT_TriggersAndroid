@@ -1,21 +1,18 @@
 using StardewValley;
-using StardewValley.Mobile;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
-using HarmonyLib;
 using StardewValley.Triggers;
 using System;
 
 namespace KT_Triggers
 {
-    internal sealed class Tiger : Mod
+    internal sealed class Trigger : Mod
     {
-        private static IMonitor M;
+        private bool wasATapped = false;
+        private bool wasBTapped = false;
 
         public override void Entry(IModHelper helper)
         {
-            M = this.Monitor;
-
             if (Constants.TargetPlatform != GamePlatform.Android)
             {
                 var ex = new Exception();
@@ -27,81 +24,48 @@ namespace KT_Triggers
             TriggerActionManager.RegisterTrigger("kazutopi1.KT_ButtonBPressed");
             TriggerActionManager.RegisterTrigger("kazutopi1.KT_OnTap");
 
-            var harmony = new Harmony(this.ModManifest.UniqueID);
-
-            harmony.Patch(
-                original: AccessTools.Method(typeof(VirtualJoypad), nameof(VirtualJoypad.CheckForTapJoystickAndButtons)),
-                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.ButtonAOrButtonB))
-            );
-            harmony.Patch(
-                original: AccessTools.Method(typeof(TapToMove), nameof(TapToMove.OnTap)),
-                postfix: new HarmonyMethod(typeof(Tiger), nameof(Tiger.OnTap))
-            );
+            helper.Events.GameLoop.UpdateTicked += this.ButtonStateCatcher;
+            Helper.Events.Input.ButtonReleased += this.OnTap;
         }
-        public static void ButtonAOrButtonB(VirtualJoypad __instance)
+        public void ButtonStateCatcher(object s, UpdateTickedEventArgs e)
         {
-            try
+            if (!Context.IsWorldReady || !Context.IsPlayerFree) { return; }
+
+            var v = Game1.virtualJoypad;
+            var f = Game1.player;
+            var keyState = Game1.currentLocation.tapToMove.mobileKeyStates;
+
+            if (f.CurrentItem != null)
             {
-                if (__instance.ButtonAPressed)
+                if (keyState.useToolButtonPressed && !wasATapped)
                 {
-                    if (Game1.currentLocation.tapToMove.mobileKeyStates.useToolButtonPressed)
-                    {
-                        if (Game1.player.CurrentItem != null)
-                        {
-                            TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed", targetItem: Game1.player.CurrentItem);
-                        }
-                    }
+                    TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed", targetItem: f.CurrentItem);
+                    wasATapped = keyState.useToolButtonPressed;
                 }
-            }
-            catch (Exception ex)
-            {
-                M.LogOnce($"Failed to raise trigger. {ex.ToString()}", LogLevel.Error);
+                else { wasATapped = false; }
             }
 
-            try
+            if (f.CurrentItem != null)
             {
-                if (__instance.ButtonBPressed)
+                if (keyState.actionButtonPressed && !wasBTapped)
                 {
-                    if (Game1.currentLocation.tapToMove.mobileKeyStates.actionButtonPressed)
-                    {
-                        if (Game1.player.CurrentItem != null)
-                        {
-                            TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed", targetItem: Game1.player.CurrentItem);
-                        }
-                    }
+                    TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed", targetItem: f.CurrentItem);
+                    wasBTapped = keyState.actionButtonPressed;
                 }
-            }
-            catch (Exception ex)
-            {
-                M.LogOnce($"Failed to raise trigger. {ex.ToString()}", LogLevel.Error);
+                else { wasBTapped = false; }
             }
         }
-        public static void OnTap(int mouseX, int mouseY, int viewportX, int viewportY)
+        public void OnTap(object s, ButtonReleasedEventArgs e)
         {
-            try
+            if (e.Button == SButton.MouseLeft && Context.IsPlayerFree && Context.IsWorldReady)
             {
-                if (!Context.IsWorldReady || !Context.IsPlayerFree) { return; }
-
-                int tappedTileX = (mouseX + viewportX) / Game1.tileSize;
-                int tappedTileY = (mouseY + viewportY) / Game1.tileSize;
-
-                int playerTileX = Game1.player.TilePoint.X;
-                int playerTileY = Game1.player.TilePoint.Y;
-
-                if (tappedTileX == playerTileX && tappedTileY == playerTileY)
+                if (e.Cursor.Tile == Game1.player.getTileLocation() && Game1.player.CurrentItem != null)
                 {
-                    if (Game1.options.weaponControl is 0 or 1)
+                    if (Game1.options.weaponControl == 0 || Game1.options.weaponControl == 1)
                     {
-                        if (Game1.player.CurrentItem != null)
-                        {
-                            TriggerActionManager.Raise("kazutopi1.KT_OnTap", targetItem: Game1.player.CurrentItem);
-                        }
+                        TriggerActionManager.Raise("kazutopi1.KT_OnTap", targetItem: Game1.player.CurrentItem);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                M.LogOnce($"Failed to raise trigger: {ex.ToString()}", LogLevel.Error);
             }
         }
     }
