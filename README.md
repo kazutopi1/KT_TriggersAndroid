@@ -13,7 +13,7 @@ Raised when the current movement control is `Tap-to-move & Auto-Attack` and the 
 
 Examples: 
 
-This snippet will give the player 1 gold every time virtual button B is pressed while holding the item `388`.
+This snippet will give the player 1 gold every time virtual button B is pressed while holding the item `(O)388`.
 ```
 {
   "Format": "2.8.0",
@@ -25,7 +25,7 @@ This snippet will give the player 1 gold every time virtual button B is pressed 
         "Test1": {
           "Id": "YourTriggerActionId",
           "Trigger": "kazutopi1.KT_ButtonBPressed",
-          "Condition": "ITEM_ID Target 388",
+          "Condition": "ITEM_ID Target (O)388",
           "Actions": [
             "AddMoney 1"
           ],
