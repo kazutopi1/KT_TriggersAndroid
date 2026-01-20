@@ -29,39 +29,37 @@ namespace KT_Triggers
         }
         public void ButtonStateCatcher(object s, UpdateTickedEventArgs e)
         {
-            if (!Context.IsWorldReady || !Context.IsPlayerFree) { return; }
+            if (!Context.IsWorldReady || Game1.activeClickableMenu != null) { return; }
 
-            var v = Game1.virtualJoypad;
-            var f = Game1.player;
-            var keyState = Game1.currentLocation.tapToMove.mobileKeyStates;
-
-            if (f.CurrentItem != null)
+            if (!wasATapped && Game1.virtualJoypad.ButtonAPressed && Game1.player.CurrentItem != null)
             {
-                if (keyState.useToolButtonPressed && !wasATapped)
-                {
-                    TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed", targetItem: f.CurrentItem);
-                    wasATapped = keyState.useToolButtonPressed;
-                }
-                else { wasATapped = false; }
+                TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed", targetItem: Game1.player.CurrentItem);
+                wasATapped = true;
+            }
+            else if (!Game1.virtualJoypad.ButtonAPressed)
+            {
+                wasATapped = false;
             }
 
-            if (f.CurrentItem != null)
+            if (!wasBTapped && Game1.virtualJoypad.ButtonBPressed && Game1.player.CurrentItem != null)
             {
-                if (keyState.actionButtonPressed && !wasBTapped)
-                {
-                    TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed", targetItem: f.CurrentItem);
-                    wasBTapped = keyState.actionButtonPressed;
-                }
-                else { wasBTapped = false; }
+                TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed", targetItem: Game1.player.CurrentItem);
+                wasBTapped = true;
+            }
+            else if (!Game1.virtualJoypad.ButtonBPressed)
+            {
+                wasBTapped = false;
             }
         }
         public void OnTap(object s, ButtonReleasedEventArgs e)
         {
-            if (e.Button == SButton.MouseLeft && Context.IsPlayerFree && Context.IsWorldReady)
+            if (!Context.IsPlayerFree || !Context.IsWorldReady) { return; }
+
+            if (e.Button == SButton.MouseLeft)
             {
                 if (e.Cursor.Tile == Game1.player.getTileLocation() && Game1.player.CurrentItem != null)
                 {
-                    if (Game1.options.weaponControl == 0 || Game1.options.weaponControl == 1)
+                    if (Game1.options.weaponControl is 0 or 1)
                     {
                         TriggerActionManager.Raise("kazutopi1.KT_OnTap", targetItem: Game1.player.CurrentItem);
                     }
