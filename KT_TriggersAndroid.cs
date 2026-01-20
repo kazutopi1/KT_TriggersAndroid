@@ -24,29 +24,31 @@ namespace KT_Triggers
             TriggerActionManager.RegisterTrigger("kazutopi1.KT_ButtonBPressed");
             TriggerActionManager.RegisterTrigger("kazutopi1.KT_OnTap");
 
-            helper.Events.GameLoop.UpdateTicked += this.ButtonStateCatcher;
-            Helper.Events.Input.ButtonReleased += this.OnTap;
+            helper.Events.GameLoop.UpdateTicking += this.ButtonStateCatcher;
+            helper.Events.Input.ButtonReleased += this.OnTap;
         }
-        public void ButtonStateCatcher(object s, UpdateTickedEventArgs e)
+        public void ButtonStateCatcher(object s, UpdateTickingEventArgs e)
         {
             if (!Context.IsWorldReady || Game1.activeClickableMenu != null) { return; }
 
-            if (!wasATapped && Game1.virtualJoypad.ButtonAPressed && Game1.player.CurrentItem != null)
+            var keyState = Game1.currentLocation.tapToMove.mobileKeyStates;
+
+            if (!wasATapped && keyState.useToolButtonPressed && Game1.player.CurrentItem != null)
             {
                 TriggerActionManager.Raise("kazutopi1.KT_ButtonAPressed", targetItem: Game1.player.CurrentItem);
                 wasATapped = true;
             }
-            else if (!Game1.virtualJoypad.ButtonAPressed)
+            else if (!keyState.useToolButtonPressed)
             {
                 wasATapped = false;
             }
 
-            if (!wasBTapped && Game1.virtualJoypad.ButtonBPressed && Game1.player.CurrentItem != null)
+            if (!wasBTapped && keyState.actionButtonPressed && Game1.player.CurrentItem != null)
             {
                 TriggerActionManager.Raise("kazutopi1.KT_ButtonBPressed", targetItem: Game1.player.CurrentItem);
                 wasBTapped = true;
             }
-            else if (!Game1.virtualJoypad.ButtonBPressed)
+            else if (!keyState.actionButtonPressed)
             {
                 wasBTapped = false;
             }
